@@ -1,1 +1,110 @@
-# Mc-fetih
+<!DOCTYPE html><html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>FetihCraft 3D Mobil</title>
+  <style>
+    body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: black; }
+    #startScreen {
+      position: absolute; width: 100%; height: 100%; background: url('https://i.imgur.com/vx7A5h7.jpg') no-repeat center center fixed;
+      background-size: cover; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      z-index: 2;
+    }
+    #startScreen button {
+      padding: 15px 30px; font-size: 24px; background-color: #00cc66; border: none; border-radius: 10px; color: white; cursor: pointer;
+    }
+    canvas { display: block; width: 100%; height: 100%; }
+    #mobile-controls {
+      position: absolute; bottom: 20px; width: 100%; display: flex; justify-content: space-between; padding: 0 20px; z-index: 2;
+    }
+    #mobile-controls button {
+      background: rgba(255,255,255,0.3); border: none; font-size: 32px; color: white; padding: 10px; border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div id="startScreen">
+    <h1 style="color:white;font-size:48px;">FetihCraft</h1>
+    <button onclick="startGame()">Oyna</button>
+  </div>
+  <canvas id="gameCanvas"></canvas>
+  <div id="mobile-controls" style="display:none;">
+    <button id="leftBtn">◀️</button>
+    <button id="rightBtn">▶️</button>
+  </div>  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/OrbitControls.js"></script>  <script>
+    let scene, camera, renderer, controls;
+    let player = { x:0, y:1.6, z:0 };
+
+    function startGame() {
+      document.getElementById('startScreen').style.display = 'none';
+      document.getElementById('mobile-controls').style.display = 'flex';
+
+      // Sahne ve kamera
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+      camera.position.set(0, player.y, 5);
+
+      // Renderer
+      renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gameCanvas'), antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+
+      // Kontroller (mobil sürükleme)
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enablePan = false;
+      controls.enableZoom = false;
+      controls.target.set(0, player.y, 0);
+      controls.update();
+
+      // Işık
+      const ambient = new THREE.AmbientLight(0x888888);
+      scene.add(ambient);
+      const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+      dirLight.position.set(5,10,7.5);
+      scene.add(dirLight);
+
+      // Zemin
+      const groundMat = new THREE.MeshLambertMaterial({ color: 0x00aa00 });
+      const groundGeo = new THREE.PlaneGeometry(20,20);
+      const ground = new THREE.Mesh(groundGeo, groundMat);
+      ground.rotation.x = -Math.PI/2;
+      scene.add(ground);
+
+      // Bloklar örnek
+      const blockColors = { dirt:0x8B4513, stone:0x888888, coal:0x333333, iron:0xCCCCCC, diamond:0x00FFFF, emerald:0x00FF00, lava:0xFF3300, torch:0xFFFF66 };
+      function addBlock(x,y,z, col) {
+        const geo = new THREE.BoxGeometry();
+        const mat = new THREE.MeshLambertMaterial({ color:col });
+        const m = new THREE.Mesh(geo, mat);
+        m.position.set(x,y,z);
+        scene.add(m);
+      }
+      // Örnek bloklar
+      addBlock(2,0.5,0,blockColors.dirt);
+      addBlock(4,0.5,0,blockColors.stone);
+      addBlock(6,0.5,0,blockColors.coal);
+      addBlock(8,0.5,0,blockColors.iron);
+      addBlock(10,0.5,0,blockColors.diamond);
+      addBlock(12,0.5,0,blockColors.emerald);
+      addBlock(-2,0.5,0,blockColors.lava);
+      addBlock(0,1,0,blockColors.torch);
+
+      // Animation loop
+      function animate() {
+        requestAnimationFrame(animate);
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      // Mobil buton kontroller
+      document.getElementById('leftBtn').addEventListener('touchstart', ()=>{ camera.position.x -= 0.2; });
+      document.getElementById('rightBtn').addEventListener('touchstart', ()=>{ camera.position.x += 0.2; });
+
+      // Responsive
+      window.addEventListener('resize', ()=>{
+        camera.aspect = window.innerWidth/window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    }
+  </script></body>
+</html>
